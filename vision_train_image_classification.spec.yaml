@@ -1,0 +1,62 @@
+$schema: http://azureml/sdk-2-0/CommandComponent.json
+name: automl_vision_train_image_classification
+version: 0.0.1
+display_name: AutoML Vision Training - Image Classification
+type: CommandComponent
+is_deterministic: true
+tags:
+  AutoML:
+  Training:
+  Vision:
+inputs:
+  models:
+    description: Models to try out
+    optional: false
+    type: String
+    enum: [all, resnet50, resnet18, mobilenetv2, seresnext]
+  training_dataset:
+    description: Name of the training dataset
+    optional: false
+    type: String
+  validation_dataset:
+    description: Name of the validation dataset
+    optional: true
+    type: String
+  compute_cluster:
+    description: Name of the GPU compute cluster
+    optional: false
+    type: String
+  iterations:
+    description: Number of model training iterations
+    optional: false
+    type: Integer
+    min: 1
+    max: 1000
+    default: 4
+  number_nodes:
+    description: Number of nodes to train on
+    optional: false
+    type: Integer
+    min: 1
+    max: 16
+    default: 1
+outputs:
+  results:
+    type: DataFrameDirectory
+    optional: false
+command: >-
+  python vision_train.py 
+    --task image-classification
+    --models {inputs.models}
+    --training_dataset {inputs.training_dataset} 
+    [--validation_dataset {inputs.validation_dataset}]
+    --compute_cluster {inputs.compute_cluster} 
+    --iterations {inputs.iterations} 
+    --number_nodes {inputs.number_nodes} 
+    --results {outputs.results}
+environment:
+  docker:
+    image: mcr.microsoft.com/azureml/intelmpi2018.3-ubuntu16.04
+  conda:
+    conda_dependencies_file: conda.yaml
+  os: Linux

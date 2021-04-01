@@ -1,0 +1,14 @@
+name: automl-vision
+channels:
+- anaconda
+- conda-forge
+dependencies:
+- python=3.6.2
+- pip
+- pip:
+  - --extra-index-url https://azuremlsdktestpypi.azureedge.net/automl-vision-tests/32573435
+  - azureml-train==0.1.0.32573435
+  - azureml-train-automl==0.1.0.32573435
+  - azureml-contrib.dataset==0.1.0.32573435
+  - azureml-designer-core==0.0.59
+  - azureml-defaults==1.24.0
