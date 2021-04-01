@@ -56,7 +56,7 @@ def train(args):
     # Check if cluster is there
     cluster_name = args.compute_cluster
     clusters = ws.compute_targets
-    print(f"clusters"{clusters}")
+    print(f"clusters: {clusters}")
     if cluster_name in clusters and clusters[cluster_name].type == 'AmlCompute':
         print('Found existing compute target.')
         compute_target = clusters[cluster_name]
