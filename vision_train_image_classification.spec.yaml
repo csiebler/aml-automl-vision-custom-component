@@ -1,7 +1,7 @@
 $schema: http://azureml/sdk-2-0/CommandComponent.json
 name: automl_vision_train_image_classification
-version: 0.0.1
-display_name: AutoML Vision Training - Image Classification
+version: 0.0.2
+display_name: Train AutoML Image Classification Model
 type: CommandComponent
 is_deterministic: true
 tags:
@@ -14,6 +14,7 @@ inputs:
     optional: false
     type: String
     enum: [all, resnet50, resnet18, mobilenetv2, seresnext]
+    default: all
   training_dataset:
     description: Name of the training dataset
     optional: false
@@ -26,6 +27,7 @@ inputs:
     description: Name of the GPU compute cluster
     optional: false
     type: String
+    default: gpu-cluster
   iterations:
     description: Number of model training iterations
     optional: false
