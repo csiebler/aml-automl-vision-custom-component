@@ -53,16 +53,6 @@ def train(args):
     # TODO: Load validation dataset
     # TODO: Figure out how to check if Dataset is of right type
         
-    # Check if cluster is there
-    cluster_name = args.compute_cluster
-    clusters = ws.compute_targets
-    print(f"clusters: {clusters}")
-    if cluster_name in clusters and clusters[cluster_name].type == 'AmlCompute':
-        print('Found existing compute target.')
-        compute_target = clusters[cluster_name]
-    else:
-        print('TODO: FAIL...')
-
     # Configure Models
     if (args.models == 'all'):
         models_to_try = choice(["resnet50", "resnet18", "mobilenetv2", "seresnext"])
@@ -83,7 +73,7 @@ def train(args):
         }
                 
         automl_vision_config = AutoMLVisionConfig(task=args.task,
-                                                  compute_target=compute_target,
+                                                  compute_target=args.compute_cluster,
                                                   training_data=training_dataset,
                                                   **tuning_settings)
         automl_vision_run = experiment.submit(automl_vision_config)
@@ -97,8 +87,8 @@ def train(args):
         df = pd.DataFrame.from_dict(data = hdruns)
         results_df = df.dropna()
 
-        # Write results back
-        print("Writing results back...")
+        # Write summary back
+        print("Writing results summary back...")
         os.makedirs(args.results, exist_ok=True)
         save_data_frame_to_directory(args.results, results_df)
     except Exception as e:
