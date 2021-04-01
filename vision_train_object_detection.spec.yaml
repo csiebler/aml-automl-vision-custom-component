@@ -1,6 +1,6 @@
 $schema: http://azureml/sdk-2-0/CommandComponent.json
 name: automl_vision_train_object_detection
-version: 0.0.2
+version: 0.0.3
 display_name: Train AutoML Object Detection Model
 type: CommandComponent
 is_deterministic: true
@@ -12,7 +12,7 @@ inputs:
   models:
     description: Models to try out
     optional: false
-    type: String
+    type: Enum
     enum: [all, fasterrcnn_resnet50_fpn, fasterrcnn_resnet18_fpn, yolov5]
     default: all
   training_dataset:
