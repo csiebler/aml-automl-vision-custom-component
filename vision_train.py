@@ -30,9 +30,9 @@ def parse_args():
     return parser.parse_args()
 
 
-def predict(args):
+def train(args):
 
-    # Get AutoML run
+    # Get current run and experiment
     run = Run.get_context()
     if (isinstance(run, azureml.core.run._OfflineRun)):
         ws = Workspace.from_config()
@@ -41,23 +41,22 @@ def predict(args):
     else:
         ws = run.experiment.workspace
         experiment = run.experiment
+
     print(f"Retrieved access to workspace {ws}")
+    print(f"Experiment for logging: {experiment}")
         
     # Reference Training Dataset
     training_dataset_name = args.training_dataset
     training_dataset = ws.datasets.get(training_dataset_name)
     print("Training dataset name: " + training_dataset.name)
     
+    # TODO: Load validation dataset
     # TODO: Figure out how to check if Dataset is of right type
-    
-    # print("Training dataset type: " + training_dataset.label['type'])
-    
-    # if (training_dataset.label['type'] != "Classification"):
-    #     print("TODO: FAIL")
-    
+        
     # Check if cluster is there
     cluster_name = args.compute_cluster
     clusters = ws.compute_targets
+    print(f"clusters"{clusters}")
     if cluster_name in clusters and clusters[cluster_name].type == 'AmlCompute':
         print('Found existing compute target.')
         compute_target = clusters[cluster_name]
@@ -108,4 +107,4 @@ def predict(args):
 
 if __name__ == '__main__':
     args = parse_args()
-    predict(args)
+    train(args)

@@ -1,6 +1,6 @@
 $schema: http://azureml/sdk-2-0/CommandComponent.json
 name: automl_vision_train_object_detection
-version: 0.0.3
+version: 0.0.4
 display_name: Train AutoML Object Detection Model
 type: CommandComponent
 is_deterministic: true
@@ -8,6 +8,7 @@ tags:
   AutoML:
   Training:
   Vision:
+  Object Detection:
 inputs:
   models:
     description: Models to try out
