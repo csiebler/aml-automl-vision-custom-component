@@ -76,7 +76,8 @@ def train(args):
                                                   compute_target=args.compute_cluster,
                                                   training_data=training_dataset,
                                                   **tuning_settings)
-        automl_vision_run = experiment.submit(automl_vision_config)
+        automl_vision_run = run.submit_child(automl_vision_config)
+        #automl_vision_run = experiment.submit(automl_vision_config)
         automl_vision_run.wait_for_completion(wait_post_processing=True)
 
         # Generate summary
