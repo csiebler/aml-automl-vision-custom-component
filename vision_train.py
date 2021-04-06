@@ -8,6 +8,7 @@ import azureml.automl.core
 from azureml.core.compute import AmlCompute
 from azureml.core.compute import ComputeTarget
 from azureml.train.hyperdrive import HyperDriveRun
+from azureml.core.authentication import MsiAuthentication
 
 from azureml.train.automl import AutoMLVisionConfig
 from azureml.train.hyperdrive import GridParameterSampling, RandomParameterSampling, BayesianParameterSampling
@@ -39,29 +40,16 @@ def train(args):
         experiment_name = 'automl-vision' 
         experiment = Experiment(ws, name=experiment_name)
     else:
-        from azureml.core.authentication import MsiAuthentication
-        from azureml.core.authentication import AzureCliAuthentication
+        ws_temp = run.experiment.workspace
+        print(f"name: {ws_temp.name}")
+        print(f"rg: {ws_temp.resource_group}")
+        print(f"subid: {ws_temp.subscription_id}")
 
-        ws = run.experiment.workspace
-        print(f"name: {ws.name}")
-        print(f"rg: {ws.resource_group}")
-        print(f"subid: {ws.subscription_id}")
-
-        try:
-            msi_auth = MsiAuthentication()
-            ws = Workspace(subscription_id=ws.subscription_id,
-                        resource_group=ws.resource_group,
-                        workspace_name=ws.name,
-                        auth=msi_auth)
-        except:
-            print("MSI-based authentication failed, will try CLI...")
-            cli_auth = AzureCliAuthentication()
-            ws = Workspace(subscription_id=ws.subscription_id,
-                        resource_group=ws.resource_group,
-                        workspace_name=ws.name,
-                        auth=cli_auth)
-
-        experiment = run.experiment
+        msi_auth = MsiAuthentication()
+        ws = Workspace(subscription_id=ws_temp.subscription_id,
+                    resource_group=ws_temp.resource_group,
+                    workspace_name=ws_temp.name,
+                    auth=msi_auth)
 
     print(f"Retrieved access to workspace {ws}")
     print(f"Experiment for logging: {experiment}")
