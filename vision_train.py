@@ -39,7 +39,18 @@ def train(args):
         experiment_name = 'automl-vision' 
         experiment = Experiment(ws, name=experiment_name)
     else:
+        from azureml.core.authentication import MsiAuthentication
+
         ws = run.experiment.workspace
+        print(f"name: {ws.name}")
+        print(f"rg: {ws.resource_group}")
+        print(f"subid: {ws.subscription_id}")
+
+        msi_auth = MsiAuthentication()
+        ws = Workspace(subscription_id=ws.subscription_id,
+                    resource_group=ws.resource_group,
+                    workspace_name=ws.name,
+                    auth=msi_auth)
         experiment = run.experiment
 
     print(f"Retrieved access to workspace {ws}")
