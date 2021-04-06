@@ -47,6 +47,8 @@ def train(args):
         print(f"subid: {ws.subscription_id}")
 
         msi_auth = MsiAuthentication()
+        print(f"MSI: {msi_auth}")
+        
         ws = Workspace(subscription_id=ws.subscription_id,
                     resource_group=ws.resource_group,
                     workspace_name=ws.name,
