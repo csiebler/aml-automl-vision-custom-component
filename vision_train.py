@@ -8,7 +8,6 @@ import azureml.automl.core
 from azureml.core.compute import AmlCompute
 from azureml.core.compute import ComputeTarget
 from azureml.train.hyperdrive import HyperDriveRun
-from azureml.core.authentication import MsiAuthentication
 
 from azureml.train.automl import AutoMLVisionConfig
 from azureml.train.hyperdrive import GridParameterSampling, RandomParameterSampling, BayesianParameterSampling
@@ -40,27 +39,20 @@ def train(args):
         experiment_name = 'automl-vision' 
         experiment = Experiment(ws, name=experiment_name)
     else:
-        ws_temp = run.experiment.workspace
-        print(f"name: {ws_temp.name}")
-        print(f"rg: {ws_temp.resource_group}")
-        print(f"subid: {ws_temp.subscription_id}")
-
-        msi_auth = MsiAuthentication()
-        ws = Workspace(subscription_id=ws_temp.subscription_id,
-                    resource_group=ws_temp.resource_group,
-                    workspace_name=ws_temp.name,
-                    auth=msi_auth)
+        ws = run.experiment.workspace
         experiment = run.experiment
 
     print(f"Retrieved access to workspace {ws}")
     print(f"Experiment for logging: {experiment}")
         
-    # Reference Training Dataset
-    training_dataset_name = args.training_dataset
-    training_dataset = ws.datasets.get(training_dataset_name)
+    # Reference Training/Validation Dataset
+    training_dataset = ws.datasets.get(args.training_dataset)
     print("Training dataset name: " + training_dataset.name)
-    
-    # TODO: Load validation dataset
+   
+    if args.validation_dataset:
+        validation_dataset = ws.datasets.get(args.validation_dataset)
+        print("Validation dataset name: " + validation_dataset.name)
+        
     # TODO: Figure out how to check if Dataset is of right type
         
     # Configure Models
@@ -81,13 +73,25 @@ def train(args):
             'hyperparameter_sampling': RandomParameterSampling(parameter_space),
             'policy': BanditPolicy(evaluation_interval=2, slack_factor=0.2, delay_evaluation=6)
         }
-                
-        automl_vision_config = AutoMLVisionConfig(task=args.task,
-                                                  compute_target=args.compute_cluster,
-                                                  training_data=training_dataset,
-                                                  **tuning_settings)
-        automl_vision_run = run.submit_child(automl_vision_config)
-        #automl_vision_run = experiment.submit(automl_vision_config)
+        
+        general_settings = {
+            'task': args.task,
+            'compute_target': args.compute_cluster,
+            'training_data': training_dataset
+        }
+        
+        try:
+            default_data['validation_data'] = validation_dataset
+        except NameError:
+            print("Skipping validation dataset...")
+        
+        automl_vision_config = AutoMLVisionConfig(**general_settings, **tuning_settings)
+        
+        if (isinstance(run, azureml.core.run._OfflineRun)):
+            automl_vision_run = experiment.submit(automl_vision_config)
+        else:
+            automl_vision_run = run.submit_child(automl_vision_config)
+        
         automl_vision_run.wait_for_completion(wait_post_processing=True)
 
         # Generate summary
