@@ -40,19 +40,27 @@ def train(args):
         experiment = Experiment(ws, name=experiment_name)
     else:
         from azureml.core.authentication import MsiAuthentication
+        from azureml.core.authentication import AzureCliAuthentication
 
         ws = run.experiment.workspace
         print(f"name: {ws.name}")
         print(f"rg: {ws.resource_group}")
         print(f"subid: {ws.subscription_id}")
 
-        msi_auth = MsiAuthentication()
-        print(f"MSI: {msi_auth}")
-        
-        ws = Workspace(subscription_id=ws.subscription_id,
-                    resource_group=ws.resource_group,
-                    workspace_name=ws.name,
-                    auth=msi_auth)
+        try:
+            msi_auth = MsiAuthentication()
+            ws = Workspace(subscription_id=ws.subscription_id,
+                        resource_group=ws.resource_group,
+                        workspace_name=ws.name,
+                        auth=msi_auth)
+        except:
+            print("MSI-based authentication failed, will try CLI...")
+            cli_auth = AzureCliAuthentication()
+            ws = Workspace(subscription_id=ws.subscription_id,
+                        resource_group=ws.resource_group,
+                        workspace_name=ws.name,
+                        auth=cli_auth)
+
         experiment = run.experiment
 
     print(f"Retrieved access to workspace {ws}")
