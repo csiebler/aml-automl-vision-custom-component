@@ -50,6 +50,7 @@ def train(args):
                     resource_group=ws_temp.resource_group,
                     workspace_name=ws_temp.name,
                     auth=msi_auth)
+        experiment = run.experiment
 
     print(f"Retrieved access to workspace {ws}")
     print(f"Experiment for logging: {experiment}")
