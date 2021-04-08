@@ -14,6 +14,8 @@ from azureml.train.hyperdrive import GridParameterSampling, RandomParameterSampl
 from azureml.train.hyperdrive import BanditPolicy, HyperDriveConfig, PrimaryMetricGoal
 from azureml.train.hyperdrive import choice, uniform
 
+from azureml.core.authentication import ServicePrincipalAuthentication, MsiAuthentication
+
 from azureml.studio.core.io.data_frame_directory import load_data_frame_from_directory, save_data_frame_to_directory
 
 # Parse args
@@ -36,12 +38,39 @@ def train(args):
     run = Run.get_context()
     if (isinstance(run, azureml.core.run._OfflineRun)):
         ws = Workspace.from_config()
-        experiment_name = 'automl-vision' 
-        experiment = Experiment(ws, name=experiment_name)
+        experiment_name = 'automl-vision'
     else:
-        ws = run.experiment.workspace
-        experiment = run.experiment
+        experiment_name = run.experiment.name
+        
+        workspace_name = run.experiment.workspace.name
+        subscription_id = run.experiment.workspace.subscription_id
+        resource_group = run.experiment.workspace.resource_group
+        
+        try:
+            print("Trying to authenticate to workspace using MSI")
+            auth = MsiAuthentication()
+            ws = Workspace(subscription_id=subscription_id,
+                           resource_group=resource_group,
+                           workspace_name=workspace_name,
+                           auth=auth)
+        except:
+            print("Trying to authenticate to workspace using SP")
+            keyvault = ws.get_default_keyvault()
+            tenant_id = keyvault.get_secret(name="automl-tenant-id")
+            sp_id = keyvault.get_secret(name="automl-service-principal-id")
+            sp_password = keyvault.get_secret(name="service-principal-password")
+            
+            auth = ServicePrincipalAuthentication(tenant_id=tenant_id,
+                                                  service_principal_id=sp_id,
+                                                  service_principal_password=sp_password)
+            ws = Workspace(subscription_id=subscription_id,
+                           resource_group=resource_group,
+                           workspace_name=workspace_name,
+                           auth=auth)
 
+    # Re-create run with fully-authenticated workspace object
+    experiment = Experiment(ws, name=experiment_name)
+    
     print(f"Retrieved access to workspace {ws}")
     print(f"Experiment for logging: {experiment}")
         
@@ -87,11 +116,8 @@ def train(args):
         
         automl_vision_config = AutoMLVisionConfig(**general_settings, **tuning_settings)
         
-        if (isinstance(run, azureml.core.run._OfflineRun)):
-            automl_vision_run = experiment.submit(automl_vision_config)
-        else:
-            automl_vision_run = run.submit_child(automl_vision_config)
-        
+        # Need to submit as new experiment, child run can't be of type AutoML
+        automl_vision_run = experiment.submit(automl_vision_config)       
         automl_vision_run.wait_for_completion(wait_post_processing=True)
 
         # Generate summary
@@ -108,7 +134,6 @@ def train(args):
         save_data_frame_to_directory(args.results, results_df)
     except Exception as e:
         raise
-
 
 if __name__ == '__main__':
     args = parse_args()
