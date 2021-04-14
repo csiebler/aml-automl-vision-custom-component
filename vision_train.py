@@ -55,7 +55,8 @@ def train(args):
                            auth=auth)
         except:
             print("Trying to authenticate to workspace using SP")
-            keyvault = ws.get_default_keyvault()
+            ws_kv = run.experiment.workspace
+            keyvault = ws_kv.get_default_keyvault()
             tenant_id = keyvault.get_secret(name="automl-tenant-id")
             sp_id = keyvault.get_secret(name="automl-service-principal-id")
             sp_password = keyvault.get_secret(name="automl-service-principal-password")
