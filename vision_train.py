@@ -58,7 +58,7 @@ def train(args):
             keyvault = ws.get_default_keyvault()
             tenant_id = keyvault.get_secret(name="automl-tenant-id")
             sp_id = keyvault.get_secret(name="automl-service-principal-id")
-            sp_password = keyvault.get_secret(name="service-principal-password")
+            sp_password = keyvault.get_secret(name="automl-service-principal-password")
             
             auth = ServicePrincipalAuthentication(tenant_id=tenant_id,
                                                   service_principal_id=sp_id,
@@ -87,7 +87,7 @@ def train(args):
     # Configure Models
     if (args.models == 'all' and args.task == 'image-classification'):
         models_to_try = choice(["resnet50", "resnet18", "mobilenetv2", "seresnext"])
-    if (args.models == 'all' and args.task == 'image-object-detection'):
+    elif (args.models == 'all' and args.task == 'image-object-detection'):
         models_to_try = choice(["fasterrcnn_resnet50_fpn", "fasterrcnn_resnet18_fpn", "yolov5"])
     else:
         models_to_try = choice(args.models)

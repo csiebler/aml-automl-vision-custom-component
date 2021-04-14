@@ -21,7 +21,7 @@ A custom component for using AutoML in Designer for training AutoML Vision model
     keyvault = ws.get_default_keyvault()
     keyvault.set_secret(name="automl-tenant-id", value="...")
     keyvault.set_secret(name="automl-service-principal-id", value="...")
-    keyvault.set_secret(name="service-principal-password", value="...")
+    keyvault.set_secret(name="automl-service-principal-password", value="...")
     ```
     This Service Principal is used by this component to start off another AutoML job on a GPU-cluster
 1. Then use in Azure Machine Learning Designer and fill out the required parameters
